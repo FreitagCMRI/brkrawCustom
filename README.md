@@ -1,3 +1,12 @@
+Note to myself: Check rest of the code, I forked a version newer then 0.3.11.
+
+For now:
+Folder: brkraw/ui/
+Replace: the main_win.py with the new one
+Add: scan_info_search.py in to the same folder
+
+---------------------------------------------------------
+
 [![DOI](https://zenodo.org/badge/245546149.svg)](https://zenodo.org/badge/latestdoi/245546149)
 [![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/BrkRaw/tutorials/master)
