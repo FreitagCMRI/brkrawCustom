@@ -1,9 +1,13 @@
 Note to myself: Check rest of the code, I forked a version newer then 0.3.11.
 
 For now:
+After installation with pip install change:
 Folder: brkraw/ui/
-Replace: the main_win.py with the new one
-Add: scan_info_search.py in to the same folder
+
+Replace: main_win.py with the new one (functionality)
+Replace: config.py with new one (comsmetics)
+Add: scan_info_search.py in to the same folder (functionality)
+
 
 ---------------------------------------------------------
 
