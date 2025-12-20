@@ -301,6 +301,11 @@ class BrukerLoader():
         method = self.get_method(scan_id)
         return self._get_bdata(method)
 
+    def get_bdata_img(self,scan_id,reco_id):
+        visu_pars = self._get_visu_pars(scan_id,reco_id)
+        method = self.get_method(scan_id)
+        return self._get_bdata_img(method,visu_pars)
+
     def get_matrix_size(self, scan_id, reco_id):
         visu_pars = self._get_visu_pars(scan_id, reco_id)
         dataobj = self._get_dataobj(scan_id, reco_id)
@@ -502,6 +507,22 @@ class BrukerLoader():
         with open('{}.bvec'.format(output_path), 'w') as bvec_fobj:
             for row in bvecs:
                 bvec_fobj.write(' '.join(row.astype('str')) + '\n')
+
+    # - FSL bval, bvec, and bmat
+    def save_bdata_img(self, scan_id, reco_id, filename, dir='./'):
+        method = self._method[scan_id]
+        visu_pars= self._get_visu_pars(scan_id,reco_id)
+        # bval, bvec, bmat = self._get_bdata(method) # [220201] bmat seems not necessary
+        bvals, bvecs = self._get_bdata_img(method,visu_pards)
+        output_path = os.path.join(dir, filename)
+
+        with open('{}.bval'.format(output_path), 'w') as bval_fobj:
+            bval_fobj.write(' '.join(bvals.astype('str')) + '\n')
+
+        with open('{}.bvec'.format(output_path), 'w') as bvec_fobj:
+            for row in bvecs:
+                bvec_fobj.write(' '.join(row.astype('str')) + '\n')
+
 
     # BIDS JSON
     def _parse_json(self, scan_id, reco_id, metadata=None):
@@ -847,6 +868,66 @@ class BrukerLoader():
         bvecs_L2_norm[bvecs_L2_norm < 1e-15] = 1
         bvecs = bvecs / np.expand_dims(bvecs_L2_norm, bvecs_axis)
         return bvals, bvecs
+    
+    @staticmethod
+    def _get_bdata_img(method,visu_pars):
+        """
+        Extract, format, and return diffusion bval and bvec
+        This is for the image domain experimentaly verfied        
+        """
+        print("only tested for  Bruker:DtiStandard, Paravision 6 and up")
+        try:
+            gradient_image_order = BrukerLoader._get_gradient_encoding_info(visu_pars)
+            param_map = {
+                "read_enc":  "PVM_DwGradRead",
+                "phase_enc": "PVM_DwGradPhase",
+                "slice_enc": "PVM_DwGradSlice",
+            }
+            components = []
+            for enc in gradient_image_order:
+                param = param_map[enc]
+                component = np.array(get_value(method, param))
+                
+                components.append(component)  # (nVec,)
+            gvec = np.stack(components, axis=1)
+            
+
+            if get_value(visu_pars,"VisuSubjectPosition") == "Head_Supine":
+                #TODO: (Andreas) Z Axis is flipped presumably, either because of the position
+                # or as denoted in an old Bruker Biospin Manual
+                # Could not find the exact version
+                # but on page D-13-39 in method programming.
+                # This was found online and not uploaded by me...
+                # Will remove the link here if needed
+                # "https://www.yumpu.com/en/document/read/17119392/method-programming-filer"
+                # 
+                #
+                # "Wrong polarity of the trim variables may lead to an incorrect 
+                # orientation of the image and to an incorrect description of its 
+                # orientation XTIP"
+                #
+                # If this is true, maybe the there was a general setup problem/
+                # paradigm change within the software...
+                #
+                gvec[:,-1]*=-1
+            bvecs = gvec.T
+        except Exception as e:
+            print(e)
+            print("Something went wrong in the extraction, dafaulting to PVM_DwGradVec")
+            bvecs = np.array(get_value(method, 'PVM_DwGradVec').T)
+        
+        
+        bvals = np.array(get_value(method, 'PVM_DwEffBval'))
+
+        # Correct for single b-vals
+        if np.size(bvals) < 2:
+            bvals = np.array([bvals])
+        # Normalize bvecs
+        bvecs_axis = 0
+        bvecs_L2_norm = np.atleast_1d(np.linalg.norm(bvecs, 2, bvecs_axis))
+        bvecs_L2_norm[bvecs_L2_norm < 1e-15] = 1
+        bvecs = bvecs / np.expand_dims(bvecs_L2_norm, bvecs_axis)
+        return bvals, bvecs
 
     # Generals
     @staticmethod
@@ -865,6 +946,8 @@ class BrukerLoader():
         else:  # case PV 6.0.1
             encoding_axis = get_value(visu_pars, 'VisuAcqGradEncoding')
         return encoding_axis
+
+    
 
     def _get_dim_info(self, visu_pars):
         """check if the frame contains only spatial components"""
