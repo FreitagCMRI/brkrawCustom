@@ -62,6 +62,9 @@ class BrukerLoader():
             return method parameter object
         get_visu_pars(scan_id, reco_id)
             return visu_pars parameter object
+        #########################
+        get_reco_pars(scan_id, reco_id)
+            return reco_pars parameter object
 
         - get method for image parameters
         get_matrix_size(scan_id, reco_id)
@@ -284,9 +287,9 @@ class BrukerLoader():
     def get_visu_pars(self):
         return self._get_visu_pars
 
+    @property
     def get_reco_pars(self):
         return self._get_reco_pars
-
 
     def get_method(self, scan_id):
         return self._method[scan_id]
