@@ -5,9 +5,9 @@ if sys.platform == 'darwin':
 else:
     font                = 'arial 10'
     button_size         = 12
-win_pre_width           = 400
+win_pre_width           = 1050
 win_pst_width           = 1050
-win_pre_height          = 100
+win_pre_height          = 800
 win_pst_height          = 800
 
 window_posx             = 100

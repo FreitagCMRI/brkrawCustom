@@ -120,11 +120,12 @@ class ScanInfoSearch(tk.Frame):
             try:
                 # Access the data via the brkraw object
                 visu_parameters = self._raw._get_visu_pars(self._scan_id, self._reco_id)._parameters
+                reco_parameters = self._raw._get_reco_pars(self._scan_id, self._reco_id)._parameters
                 acqp_parameters = self._raw.get_acqp(self._scan_id)._parameters
                 method_parameters = self._raw.get_method(self._scan_id)._parameters
 
                 # Merge all dictionaries
-                parameters = visu_parameters | acqp_parameters | method_parameters
+                parameters = visu_parameters | acqp_parameters | method_parameters |reco_parameters
                 
                 # Cache the results
                 if isinstance(parameters, dict):

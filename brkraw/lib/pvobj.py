@@ -29,6 +29,9 @@ class PvDatasetBase:
         self._method = dict()
         self._acqp = dict()
         self._visu_pars = dict()
+        #######################
+        self._reco_pars = dict()
+        #######################
         self._reco = dict()
         self._2dseq = dict()
 
@@ -142,6 +145,11 @@ class PvDatasetBase:
         for tpl in filter(functools.partial(lambda x, y: True if x.reco_id == y else False,
                                             y=reco_id), self._reco[scan_id]):
             return Parameter(self._open_string(tpl.idx))
+    
+    def get_reco_pars(self, scan_id, reco_id):
+        for tpl in filter(functools.partial(lambda x, y: True if x.reco_id == y else False,
+                                            y=reco_id), self._reco_pars[scan_id]):
+            return Parameter(self._open_string(tpl.idx))
 
     def __repr__(self):
         return 'PvDataset( storageLocation: "{}" )'.format(self.path)
@@ -214,6 +222,13 @@ class PvDatasetDir(PvDatasetBase):
                         else:
                             self._reco[int(scan_id)] = [_reco(reco_id=int(reco_id),
                                                               idx=os.path.join(root, 'reco'))]
+                        if int(scan_id) in self._reco_pars.keys():
+                            self._reco_pars[int(scan_id)].append(_reco(reco_id=int(reco_id),
+                                                                  idx=os.path.join(root, 'reco')))
+                        else:
+                            self._reco_pars[int(scan_id)] = [_reco(reco_id=int(reco_id),
+                                                              idx=os.path.join(root, 'reco'))]
+
 
     def _open_object(self, path):
         return open(path, 'rb')

@@ -274,7 +274,7 @@ class BrukerLoader():
                 dataobj = swap_slice_axis(group_id, dataobj)
             else:
                 # the output data will have default matrix shape and order.
-                warnings.warn('Unexpected frame group combination;{}'.format(ISSUE_REPORT), UserWarning)
+                warnings.warn(f'Unexpected frame group combination; {group_id[0]}'+'{}'.format(ISSUE_REPORT), UserWarning)
         return dataobj
 
     def get_fid(self, scan_id):
@@ -283,6 +283,10 @@ class BrukerLoader():
     @property
     def get_visu_pars(self):
         return self._get_visu_pars
+
+    def get_reco_pars(self):
+        return self._get_reco_pars
+
 
     def get_method(self, scan_id):
         return self._method[scan_id]
@@ -1172,7 +1176,14 @@ class BrukerLoader():
     def _get_visu_pars(self, scan_id, reco_id):
         # test validation of scan_id and reco_id here
         self._inspect_ids(scan_id, reco_id)
+
         return self._pvobj.get_visu_pars(scan_id, reco_id)
+
+    def _get_reco_pars(self, scan_id, reco_id):
+        # test validation of scan_id and reco_id here
+        self._inspect_ids(scan_id, reco_id)
+        
+        return self._pvobj.get_reco_pars(scan_id, reco_id)
 
     @staticmethod
     def _get_frame_group_info(visu_pars):
